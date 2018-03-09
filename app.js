@@ -3,7 +3,7 @@ var bodyParser = require('body-parser');
 var path = require('path');
 var expressValidator = require('express-validator');
 var mongojs = require('mongojs')
-var db = mongojs('customerapp', ['users']);
+var db = mongojs('meal-engine', ['users']);
 var ObjectId = mongojs.ObjectId;
 var app = express();
 
@@ -35,17 +35,15 @@ app.use(function(req, res, next){
 app.use(expressValidator());﻿
 
 app.get('/', function(req, res){
-  db.users.find(function(err, docs){
-    console.log(docs);
+  db.users.find(function(err, users){
     res.render('index', {
       title: 'Customers',
-      users: docs
+      users: users
     });
   })
 });
 
 app.post('/users/add', function(req, res){
-
   req.checkBody('first_name', 'First Name is Required').notEmpty();
   req.checkBody('last_name', 'Last Name is Required').notEmpty();
   req.checkBody('email', 'Email Name is Required').notEmpty();
@@ -53,11 +51,13 @@ app.post('/users/add', function(req, res){
   var errors = req.validationErrors();
 
     if(errors){
+      db.users.find(function(err, users){
         res.render('index', {
           title: 'Customers',
-          users: docs,
-          errors: errors
+          errors: errors,
+          users: users
         });
+      })
     } else {
         var newUser = {
           first_name: req.body.first_name,
